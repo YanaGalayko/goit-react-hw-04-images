@@ -21,7 +21,6 @@ export const ModalWindow = ({ largeImageURL, tag , onClick, modalIsOpen}) => {
             isOpen={modalIsOpen}
             onRequestClose={onClick}
             style={customStyles}
-            // contentLabel="Minimal Modal Example"
           >
             <ModalImageIsOpen src={largeImageURL} alt={tag} />
           </Modal>

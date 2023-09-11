@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchQuery } from '../servises/api';
 import toast, { Toaster } from 'react-hot-toast';
 import { Searchbar } from "./Searchbar/Searchbar";
@@ -8,32 +8,26 @@ import { Loader } from './Loader/Loader';
 import { GlobalStyle } from './GlobalStyle';
 import { Layout } from './Layout';
 
+export const App = () => {
+const [query, setQuery] = useState('')
+const [images, setImades] = useState([])
+const [page, setPage] = useState(1)
+const [totalHits, setTotalHits] = useState(0)
+const [loading, setLoading] = useState(false)
+const [error, setError] = useState(false)
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    totalHits: 0,
-    loading: false,
-    error: false,
+useEffect(() => {
+  if (!query) {
+    return;
   }
 
-componentDidUpdate(prevProps, prevState) {
-  const { query, page} = this.state
-    
-    if(prevState.query !== query || prevState.page !== page) {
-       this.fetchImages()
-    }
-  }
-  fetchImages = async () => {
-    const { query, page} = this.state
-
+  const fetchImages = async () => {
     try {
-      this.setState({ loading: true });
+      setLoading(true);
+      setError(false);
       const currentQuery = query.slice(14);
       const { hits, totalHits } = await fetchQuery(currentQuery, page);
-
+  
     if(!totalHits) {
       toast.error(
         'Sorry, there is no image for your search query, please try again!',{
@@ -42,51 +36,50 @@ componentDidUpdate(prevProps, prevState) {
       return
     } 
       
-    this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        totalHits: totalHits,
-      }));
+    setImades(prevImages => [...prevImages, ...hits])
+    setTotalHits(totalHits)
     
     } catch (error) {
-      this.setState({ error: true });
+      setError(true);
       toast.error('Sorry, something went wrong, please try again!',{
         duration: 4000,
     });
     } finally {
-      this.setState({ loading: false, error: false });
+      setLoading(false);
+      setError(false);
     }
-  }
+  } 
 
-  handleSubmit = value => {
+  fetchImages()
+}, [page, query])
 
-    this.setState({
-      query: `${Date.now()}/${value}`,
-      images: [],
-      page: 1,
-    });
-  };
+const handleSubmit = (value) => {
+  setQuery(`${Date.now()}/${value}`)
+  setImades([])
+  setPage(1)
+};
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
+const handleLoadMore = () => {
+  setPage(prevPage => prevPage + 1);
+};
 
-  render() {
-    const {totalHits, images, loading, error } = this.state
-    const lastPages = Math.ceil(totalHits / 12);
-    return (
-      <Layout>
-      <Searchbar onSubmit={this.handleSubmit}/>
-      <section>
-      {loading && <Loader/>}
-      {totalHits > 0 && <ImageGallery images={images}/>}
-      {images.length > 0 &&  lastPages > 1 && !loading && !error && <LoadMoreBtn onLoadMore={this.handleLoadMore}/>}
-      </section>
-      <GlobalStyle/>
-      <Toaster position="top-right" reverseOrder={false}/>
-    </Layout>
-    )
-  }
-
+const lastPages = Math.ceil(totalHits / 12);
+return (
+  <Layout>
+  <Searchbar onSubmit={handleSubmit}/>
+  <section>
+  {loading && <Loader/>}
+  {totalHits > 0 && <ImageGallery images={images}/>}
+  {images.length > 0 &&  lastPages > 1 && !loading && !error && <LoadMoreBtn onLoadMore={handleLoadMore}/>}
+  </section>
+  <GlobalStyle/>
+  <Toaster position="top-right" reverseOrder={false}/>
+</Layout>
+)
 }
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useState } from "react";
 import toast from 'react-hot-toast';
 import { SearchBarStyled, 
          SearchForm,
@@ -6,51 +6,50 @@ import { SearchBarStyled,
          SearchFormButton } from "./Searchbar.styled";
 import { FiSearch } from 'react-icons/fi';
 
-export class Searchbar extends Component {
-    state = {
-        value: '',
+export const Searchbar = ({onSubmit}) => {
+const [value, setValue] = useState('')
+
+const handleValueChange = (e) => {
+  setValue(e.currentTarget.value.toLowerCase())
+}
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  if (!value.trim()) {
+      toast.error('Pleas, enter a search query!', {
+          duration: 4000,
+      });
+      return;
     }
 
-handleValueChange = e => {
-    this.setState({value: e.currentTarget.value.toLowerCase()})
+    onSubmit(value);
+    setValue('');
 };
 
-handleSubmit = e => {
-    e.preventDefault();
-
-    const {value} = this.state
-    if (!value.trim()) {
-        toast.error('Pleas, enter a search query!', {
-            duration: 4000,
-        });
-        return;
-      }
-
-      this.props.onSubmit(value);
-      this.setState({ value: '' });
-};
-
-render() {
-    const {value} = this.state
-
-    return (
-    <SearchBarStyled>
-      <SearchForm onSubmit={this.handleSubmit}>
-         <SearchFormButton type="submit">
-           <FiSearch size="30"/>
-         </SearchFormButton>
+return (
+  <SearchBarStyled>
+    <SearchForm onSubmit={handleSubmit}>
+       <SearchFormButton type="submit">
+         <FiSearch size="30"/>
+       </SearchFormButton>
 
 
-      <SearchFormInput
-         type="text"
-         value={value}
-         autoComplete="off"
-         autoFocus
-         placeholder="Search images and photos"
-         onChange={this.handleValueChange}
-      />
-      </SearchForm>
-    </SearchBarStyled>
-    )
-  };
-};
+    <SearchFormInput
+       type="text"
+       value={value}
+       autoComplete="off"
+       autoFocus
+       placeholder="Search images and photos"
+       onChange={handleValueChange}
+    />
+    </SearchForm>
+  </SearchBarStyled>
+  )
+}
+
+
+
+
+
+
